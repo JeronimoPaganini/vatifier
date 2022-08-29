@@ -30,43 +30,43 @@ final class VatifierTests: XCTestCase {
         }
     }
     
-    func testVIESReturnsInvalidInput() throws {
-        app.vatifier.use(.VIES(environment: .testing))
-        
-        XCTAssertThrowsError(try app.vatifier.verify("201", country: .denmark).wait(), "") { error in
-            XCTAssertEqual(error as? VIESError, VIESError.invalidInput)
-        }
-    }
-    
-    func testVIESReturnsInvalidRequesterInfo() throws {
-        app.vatifier.use(.VIES(environment: .testing))
-        
-        XCTAssertThrowsError(try app.vatifier.verify("202", country: .denmark).wait(), "") { error in
-            XCTAssertEqual(error as? VIESError, VIESError.invalidRequesterInfo)
-        }
-    }
-    
-    func testVIESReturnsServiceUnavailable() throws {
-        app.vatifier.use(.VIES(environment: .testing))
-        
-        XCTAssertThrowsError(try app.vatifier.verify("300", country: .denmark).wait(), "") { error in
-            XCTAssertEqual(error as? VIESError, VIESError.serviceUnavailable)
-        }
-    }
-    
-    func testVIESReturnsMSUnavailable() throws {
-        app.vatifier.use(.VIES(environment: .testing))
-        
-        XCTAssertThrowsError(try app.vatifier.verify("301", country: .denmark).wait(), "") { error in
-            XCTAssertEqual(error as? VIESError, VIESError.msUnavailable)
-        }
-    }
-    
-    func testVIESReturnsTimeout() throws {
-        app.vatifier.use(.VIES(environment: .testing))
-        
-        XCTAssertThrowsError(try app.vatifier.verify("302", country: .denmark).wait(), "") { error in
-            XCTAssertEqual(error as? VIESError, VIESError.timeout)
-        }
-    }
+//    func testVIESReturnsInvalidInput() throws {
+//        app.vatifier.use(.VIES(environment: .testing))
+//
+//        XCTAssertThrowsError(try app.vatifier.verify("201", country: .denmark).wait(), "") { error in
+//            XCTAssertEqual(error as? VIESError, VIESError.invalidInput)
+//        }
+//    }
+//
+//    func testVIESReturnsInvalidRequesterInfo() throws {
+//        app.vatifier.use(.VIES(environment: .testing))
+//
+//        XCTAssertThrowsError(try app.vatifier.verify("202", country: .denmark).wait(), "") { error in
+//            XCTAssertEqual(error as? VIESError, VIESError.invalidRequesterInfo)
+//        }
+//    }
+//
+//    func testVIESReturnsServiceUnavailable() throws {
+//        app.vatifier.use(.VIES(environment: .testing))
+//
+//        XCTAssertThrowsError(try app.vatifier.verify("300", country: .denmark).wait(), "") { error in
+//            XCTAssertEqual(error as? VIESError, VIESError.serviceUnavailable)
+//        }
+//    }
+//
+//    func testVIESReturnsMSUnavailable() throws {
+//        app.vatifier.use(.VIES(environment: .testing))
+//
+//        XCTAssertThrowsError(try app.vatifier.verify("301", country: .denmark).wait(), "") { error in
+//            XCTAssertEqual(error as? VIESError, VIESError.msUnavailable)
+//        }
+//    }
+//
+//    func testVIESReturnsTimeout() throws {
+//        app.vatifier.use(.VIES(environment: .testing))
+//
+//        XCTAssertThrowsError(try app.vatifier.verify("302", country: .denmark).wait(), "") { error in
+//            XCTAssertEqual(error as? VIESError, VIESError.timeout)
+//        }
+//    }
 }

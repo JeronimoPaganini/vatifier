@@ -1,5 +1,4 @@
 import Vapor
-import SwiftyXMLParser
 
 public struct VIESClient: VatifierClient {
     public enum Environment {
@@ -9,9 +8,9 @@ public struct VIESClient: VatifierClient {
         var apiURL: String {
             switch self {
             case .production:
-                return "https://ec.europa.eu/taxation_customs/vies/services/checkVatService"
+                return "https://ec.europa.eu/taxation_customs/vies/rest-api/ms/%COUNTRY%/vat/%VATNUMBER%"
             case .testing:
-                return "https://ec.europa.eu/taxation_customs/vies/services/checkVatTestService"
+                return "https://ec.europa.eu/taxation_customs/vies/rest-api/ms/%COUNTRY%/vat/%VATNUMBER%"
             }
         }
     }
@@ -33,19 +32,16 @@ public struct VIESClient: VatifierClient {
             return client.eventLoop.future(error: VIESError.invalidInput)
         }
         
-        let soapBody = VIESClient.soapBodyTemplate
+        let apiURL = self.environment.apiURL
             .replacingOccurrences(of: "%COUNTRY%", with: country.rawValue)
             .replacingOccurrences(of: "%VATNUMBER%", with: vatNumber)
         
-        var buffer = ByteBufferAllocator().buffer(capacity: soapBody.utf8.count)
-        buffer.writeString(soapBody)
-        
         let headers = HTTPHeaders([
-            ("Content-Type", "application/xml"),
+            ("Content-Type", "application/json"),
             ("Cache-Control", "no-cache")
         ])
         
-        let request = ClientRequest(method: .POST, url: URI(string: environment.apiURL), headers: headers, body: buffer)
+        let request = ClientRequest(method: .GET, url: URI(string: apiURL), headers: headers)
         
         return client.send(request)
             .flatMap { response in
@@ -54,51 +50,23 @@ public struct VIESClient: VatifierClient {
                 }
                 
                 do {
-                    let responseXML = try XML.parse(String(buffer: buffer))
-                    
-                    if let faultString = responseXML["soap:Envelope", "soap:Body", "soap:Fault", "faultstring"].text {
-                        return self.client.eventLoop.future(error: VIESError(faultString: faultString))
-                    }
-                    
-                    let fields = responseXML["soap:Envelope", "soap:Body", "checkVatResponse"]
-                    
-                    guard
-                        let isValidString = fields["valid"].text,
-                        let isValid = Bool(isValidString)
-                        else {
-                            return self.client.eventLoop.future(error: VIESError.failedToParseResponse)
-                    }
+                    let result = try JSONDecoder().decode(VATVerificationResponse.self, from: buffer)
                     
                     var address: String? = nil
                     var name: String? = nil
                     
-                    if let xmlName = fields["name"].text, xmlName != "---" {
-                        name = xmlName
+                    if result.name != "---" {
+                        name = result.name
                     }
                     
-                    if let xmlAddress = fields["address"].text, xmlAddress != "---" {
-                        address = xmlAddress
+                    if result.address != "---" {
+                        address = result.address
                     }
                     
-                    return self.client.eventLoop.future(VATVerificationResponse(isValid: isValid, name: name, address: address))
-                } catch XMLError.failToEncodeString {
-                    return self.client.eventLoop.future(error: VIESError.failedToParseResponse)
+                    return self.client.eventLoop.future(VATVerificationResponse(isValid: result.isValid, name: name, address: address))
                 } catch {
                     return self.client.eventLoop.future(error: error)
                 }
         }
     }
-}
-
-extension VIESClient {
-    static let soapBodyTemplate = """
-    <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns1="urn:ec.europa.eu:taxud:vies:services:checkVat:types" xmlns:impl="urn:ec.europa.eu:taxud:vies:services:checkVat">
-        <soap:Header></soap:Header>
-        <soap:Body>
-            <tns1:checkVat xmlns:tns1="urn:ec.europa.eu:taxud:vies:services:checkVat:types"     xmlns="urn:ec.europa.eu:taxud:vies:services:checkVat:types">     <tns1:countryCode>%COUNTRY%</tns1:countryCode>
-                <tns1:vatNumber>%VATNUMBER%</tns1:vatNumber>
-            </tns1:checkVat>
-        </soap:Body>
-    </soap:Envelope>
-    """
 }
