@@ -13,15 +13,13 @@ let package = Package(
             targets: ["Vatifier"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.55.4"),
-        .package(url: "https://github.com/yahoojapan/SwiftyXMLParser.git", from: "5.6.0")
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.55.4")
     ],
     targets: [
         .target(
             name: "Vatifier",
             dependencies: [
-                .product(name: "Vapor", package: "vapor"),
-                .product(name: "SwiftyXMLParser", package: "SwiftyXMLParser")
+                .product(name: "Vapor", package: "vapor")
         ]),
         .testTarget(
             name: "VatifierTests",

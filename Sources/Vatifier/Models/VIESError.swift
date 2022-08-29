@@ -37,7 +37,7 @@ public enum VIESError: DebuggableError, Equatable {
     public var reason: String {
         switch self {
         case .failedToParseResponse:
-            return "Failed to parse the XML response from VIES"
+            return "Failed to parse the JSON response from VIES"
         case .invalidInput:
             return "The provided CountryCode is invalid or the VAT number is empty"
         case .serviceUnavailable:
